@@ -8,6 +8,11 @@ export default function SpellChecker() {
     const [typos, setTypos] = useState([]);
     
     const URL = 'http://localhost:8080'
+    const customConfig = {
+      headers: {
+      'Content-Type': 'text/plain'
+      }
+    }
     const handleTextChange = e => {
       setText(e.target.value);
       setSentence(e.target.value);
@@ -23,11 +28,6 @@ export default function SpellChecker() {
 
     useEffect(() => {
       const delayDebounceFn = setTimeout(async () => {
-        const customConfig = {
-          headers: {
-          'Content-Type': 'text/plain'
-          }
-        }
         if(sentence){
           try {
             const res = await axios.post(URL + "/message", sentence, customConfig);
