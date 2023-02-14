@@ -1,5 +1,5 @@
 import './App.css';
-import SpellChecker from './components/SpellChecker';
+import SpellChecker from './components/SpellChecker/SpellChecker';
 
 function App() {
   return (
