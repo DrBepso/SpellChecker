@@ -62,6 +62,50 @@ describe('Spellchecker component', () => {
     });
   });
 
+  it('updates the text state when the textarea value changes', () => {
+    const { getByPlaceholderText } = render(<SpellChecker />);
+    const input = getByPlaceholderText('Type here...');
+    fireEvent.change(input, { target: { value: 'new text' } });
+    expect(input.value).toBe('new text');
+  });
+
+  it('renders multiple typo blocks when multiple issues exist', async () => {
+    const { getByPlaceholderText, getByText } = render(<SpellChecker />);
+    const input = getByPlaceholderText('Type here...');
+    fireEvent.change(input, { target: { value: 'word word1' } });
+
+    jest.advanceTimersByTime(1000);
+
+    const firstTypoBlock = await waitFor(()=>getByText('word - misspelling'));
+    const secondTypoBlock = await waitFor(()=>getByText('word1 - misspelling'));
+    const firstTypoButton = await waitFor(()=>getByText('correct'));
+    const secondTypoButton = await waitFor(()=>getByText('correct1'));
+    expect(firstTypoBlock).toBeInTheDocument();
+    expect(secondTypoBlock).toBeInTheDocument();
+    expect(firstTypoButton).toBeInTheDocument();
+    expect(secondTypoButton).toBeInTheDocument();
+  });
+
+  it('handles typo clicks', async () => {
+    const { getByPlaceholderText, getByText } = render(<SpellChecker />);
+    const input = getByPlaceholderText('Type here...');
+    fireEvent.change(input, { target: { value: 'word' } });
+
+    jest.advanceTimersByTime(1000);
+
+    const button = await waitFor(()=>getByText('correct'));
+    fireEvent.click(button);
+    expect(input.value).toBe('correct');
+  });
+});
+
+describe('API calls', ()=>{
+  jest.useFakeTimers();
+  
+  beforeEach(() => {
+    axios.post = jest.fn(() => Promise.resolve({ data: { issues: [{ match: { surface: 'word', beginOffset: 0, endOffset: 4, replacement: ['correct'] }, type: 'misspelling' },{ match: { surface: 'word1', beginOffset: 5, endOffset: 10, replacement: ['correct1'] }, type: 'misspelling' }] } }));
+  });
+
   it('calls axios correctly', () => {
     const { getByPlaceholderText } = render(<SpellChecker />);
     const input = getByPlaceholderText('Type here...');
@@ -75,13 +119,6 @@ describe('Spellchecker component', () => {
             'Content-Type': 'text/plain'
         }
     });
-  });
-
-  it('updates the text state when the textarea value changes', () => {
-    const { getByPlaceholderText } = render(<SpellChecker />);
-    const input = getByPlaceholderText('Type here...');
-    fireEvent.change(input, { target: { value: 'new text' } });
-    expect(input.value).toBe('new text');
   });
 
   it('calls the API when the sentence state changes', async () => {
@@ -109,23 +146,6 @@ describe('Spellchecker component', () => {
     mock.mockRestore();
   });
 
-  it('renders multiple typo blocks when multiple issues exist', async () => {
-    const { getByPlaceholderText, getByText } = render(<SpellChecker />);
-    const input = getByPlaceholderText('Type here...');
-    fireEvent.change(input, { target: { value: 'word word1' } });
-
-    jest.advanceTimersByTime(1000);
-
-    const firstTypoBlock = await waitFor(()=>getByText('word - misspelling'));
-    const secondTypoBlock = await waitFor(()=>getByText('word1 - misspelling'));
-    const firstTypoButton = await waitFor(()=>getByText('correct'));
-    const secondTypoButton = await waitFor(()=>getByText('correct1'));
-    expect(firstTypoBlock).toBeInTheDocument();
-    expect(secondTypoBlock).toBeInTheDocument();
-    expect(firstTypoButton).toBeInTheDocument();
-    expect(secondTypoButton).toBeInTheDocument();
-  });
-
   it('does not update the typos state when the API call fails', async () => {
     jest.spyOn(axios, 'post').mockRejectedValue(new Error('error'));
 
@@ -148,16 +168,4 @@ describe('Spellchecker component', () => {
 
     expect(axios.post).toHaveBeenCalledTimes(0);
   });
-
-  it('handles typo clicks', async () => {
-    const { getByPlaceholderText, getByText } = render(<SpellChecker />);
-    const input = getByPlaceholderText('Type here...');
-    fireEvent.change(input, { target: { value: 'word' } });
-
-    jest.advanceTimersByTime(1000);
-
-    const button = await waitFor(()=>getByText('correct'));
-    fireEvent.click(button);
-    expect(input.value).toBe('correct');
-  });
-});
+})
