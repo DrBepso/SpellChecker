@@ -21,17 +21,30 @@ import com.example.springboot.model.Issue;
 import com.example.springboot.model.Match;
 import com.example.springboot.model.SpellCheck;
 
+/**
+ * SpellCheckerController is a REST controller class that provides endpoints for checking the spelling of a given message.
+ */
 @RestController
 public class SpellCheckerController {
 
 	private static final String CROSS_ORIGIN_ORIGIN = "http://localhost:3000";
 	private JLanguageTool langTool = new JLanguageTool(new AmericanEnglish());
 
+	/**
+	 * The index method returns a greeting message from Spring Boot.
+	 * @return a greeting message from Spring Boot
+	 */
 	@GetMapping("/")
 	public String index() {
 		return "Greetings from Spring Boot!";
 	}
 
+	/**
+	 * The postMessage method checks the spelling of a given message (in plain text)
+	 * and returns a response with the spelling issues found (in JSON format).
+	 * @param message the message to be checked
+	 * @return a response with the spelling issues found
+	 */
 	@PostMapping(path = "/message", consumes = "text/plain")
 	@CrossOrigin(origins = CROSS_ORIGIN_ORIGIN)
 	@ResponseBody
@@ -53,7 +66,12 @@ public class SpellCheckerController {
 		}
 		return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
-
+	/**
+	 * The getIssues method finds spelling issues in a given message using the language tool.
+	 * @param message the message to be checked
+	 * @param langTool the language tool used for checking the spelling
+	 * @return a list of spelling issues that the languagetool found
+	 * */
 	private List<Issue> getIssues(String message, JLanguageTool langTool) throws IOException {
 		List<Issue> issues = new ArrayList<Issue>();
 		List<RuleMatch> matches = langTool.check(message);
