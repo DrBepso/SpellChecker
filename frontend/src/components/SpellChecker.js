@@ -17,7 +17,7 @@ export default function SpellChecker() {
       setText(e.target.value);
       setSentence(e.target.value);
     };
-    const handleTypoClick = (typo, suggestion) => {
+    const handleSuggestionClick = (typo, suggestion) => {
       setText(text => {
         const newText = text.slice(0, typo.start) + suggestion + text.slice(typo.end);
         setSentence(newText);
@@ -73,7 +73,7 @@ export default function SpellChecker() {
                 <button 
                   key={i}
                   className="typo-button"
-                  onClick={() => handleTypoClick(typo, suggestion)}
+                  onClick={() => handleSuggestionClick(typo, suggestion)}
                 >
                   {suggestion}
                 </button>
