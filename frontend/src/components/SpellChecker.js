@@ -3,48 +3,51 @@ import axios from 'axios';
 import './SpellChecker.css';
 
 export default function SpellChecker() {
-    const [word, setWordTerm] = useState('')
+    const [sentence, setSentence] = useState('')
     const [text, setText] = useState('');
     const [typos, setTypos] = useState([]);
     
     const URL = 'http://localhost:8080'
     const handleTextChange = e => {
       setText(e.target.value);
-      setWordTerm(e.target.value);
+      setSentence(e.target.value);
     };
     const handleTypoClick = (typo, suggestion) => {
       setText(text => {
         const newText = text.slice(0, typo.start) + suggestion + text.slice(typo.end);
-        setWordTerm(newText);
+        setSentence(newText);
         return newText;
       });
       setTypos(typos.filter(item => item !== typo));
     };
 
     useEffect(() => {
-      const delayDebounceFn = setTimeout(() => {
+      const delayDebounceFn = setTimeout(async () => {
         const customConfig = {
           headers: {
           'Content-Type': 'text/plain'
           }
         }
-        if(word){
-          axios.post(URL+"/message", word, customConfig).then(res => {
-            setTypos(res.data.issues.map(typo => ({
-              word: typo.match.surface,
-              start: typo.match.beginOffset,
-              end: typo.match.endOffset,
-              suggestion: typo.match.replacement,
-              type: typo.type
-            })));
-          }).catch(error => {
+        if(sentence){
+          try {
+            const res = await axios.post(URL + "/message", sentence, customConfig);
+            setTypos(
+              res.data.issues.map((typo) => ({
+                word: typo.match.surface,
+                start: typo.match.beginOffset,
+                end: typo.match.endOffset,
+                suggestion: typo.match.replacement,
+                type: typo.type,
+              }))
+            );
+          } catch (error) {
             console.error(error);
-          });
+          }
         }
         
       }, 1000)
       return () => clearTimeout(delayDebounceFn)
-    }, [word])
+    }, [sentence])
   
     return (
       <div className="float-container">
