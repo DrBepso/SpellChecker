@@ -3,6 +3,7 @@ package com.example.springboot;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.languagetool.JLanguageTool;
 import org.languagetool.language.AmericanEnglish;
@@ -73,20 +74,17 @@ public class SpellCheckerController {
 	 * @return a list of spelling issues that the languagetool found
 	 * */
 	private List<Issue> getIssues(String message, JLanguageTool langTool) throws IOException {
-		List<Issue> issues = new ArrayList<Issue>();
 		List<RuleMatch> matches = langTool.check(message);
-		for (RuleMatch match : matches) {
-			issues.add(new Issue(
-				match.getRule().getCategory().getName(),
-				new Match(
-					message.substring(match.getFromPos(), match.getToPos()),
-					match.getFromPos(),
-					match.getToPos(),
-					match.getSuggestedReplacements()
-				)
-			));
-		}
-		return issues;
+		return matches.stream()
+		  .map(match -> new Issue(
+			match.getRule().getCategory().getName(),
+			new Match(
+			  message.substring(match.getFromPos(), match.getToPos()),
+			  match.getFromPos(),
+			  match.getToPos(),
+			  match.getSuggestedReplacements()
+			)
+		  ))
+		  .collect(Collectors.toList());
 	}
-
 }
