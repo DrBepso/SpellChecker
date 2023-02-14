@@ -65,8 +65,42 @@ public class SpellCheckerControllerTest {
             .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
-	@Test
+    @Test
+    public void postMessage_NoInput_Returns400() throws Exception {
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+            .post("/message")
+            .contentType(MediaType.TEXT_PLAIN);
+
+        mvc.perform(request)
+            .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
     public void postMessage_CorrectInput_ReturnsCorrectJSONValues() throws Exception {
+        String input = "This is a sentence without a spelling error.";
+		SpellCheck expectedResponse = new SpellCheck(
+        	new Info(input), 
+        	List.of()
+    	);
+        
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+            .post("/message")
+            .contentType(MediaType.TEXT_PLAIN)
+            .content(input);
+        MvcResult result = mvc.perform(request)
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andReturn();
+        ObjectMapper mapper = new ObjectMapper();
+		mapper.registerModule(new JavaTimeModule());
+        SpellCheck actualResponse = mapper.readValue(result.getResponse().getContentAsString(), SpellCheck.class);
+        
+        assertThat(actualResponse.getInfo().getWords()).isEqualTo(expectedResponse.getInfo().getWords());
+		assertThat(actualResponse.getIssues().size()).isEqualTo(expectedResponse.getIssues().size());
+    }
+
+	@Test
+    public void postMessage_CorrectInput_SpellingError_ReturnsCorrectJSONValues() throws Exception {
         String input = "This is a sentece with an speling error.";
 		SpellCheck expectedResponse = new SpellCheck(
         	new Info(input), 
@@ -74,15 +108,14 @@ public class SpellCheckerControllerTest {
 			new Issue("Miscellaneous", new Match("an", 23, 25, List.of("a"))),
 			new Issue("Possible Typo", new Match("speling", 26, 33, List.of("spelling","spewing","spieling"))))
     	);
+
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
             .post("/message")
             .contentType(MediaType.TEXT_PLAIN)
             .content(input);
-
         MvcResult result = mvc.perform(request)
             .andExpect(MockMvcResultMatchers.status().isOk())
             .andReturn();
-
         ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new JavaTimeModule());
         SpellCheck actualResponse = mapper.readValue(result.getResponse().getContentAsString(), SpellCheck.class);

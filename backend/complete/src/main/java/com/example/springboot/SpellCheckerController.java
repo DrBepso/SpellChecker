@@ -53,19 +53,22 @@ public class SpellCheckerController {
 		if (message == null || message.trim().isEmpty()) {
 			return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
 		}
-		
+	
+		if (langTool == null) {
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	
 		try {
 			List<Issue> issues = getIssues(message, langTool);
 			return new ResponseEntity<>(
 				new SpellCheck(
 					new Info(message),
 					issues
-				)
-			,HttpStatus.OK);
+				), HttpStatus.OK);
 		} catch (IOException e) {
 			e.printStackTrace();
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	/**
 	 * The getIssues method finds spelling issues in a given message using the language tool.
