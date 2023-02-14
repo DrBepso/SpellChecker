@@ -25,6 +25,7 @@ import com.example.springboot.model.SpellCheck;
 public class SpellCheckerController {
 
 	private static final String CROSS_ORIGIN_ORIGIN = "http://localhost:3000";
+	private JLanguageTool langTool = new JLanguageTool(new AmericanEnglish());
 
 	@GetMapping("/")
 	public String index() {
@@ -38,7 +39,7 @@ public class SpellCheckerController {
 		if (message == null || message.trim().isEmpty()) {
 			return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
 		}
-		JLanguageTool langTool = new JLanguageTool(new AmericanEnglish());
+		
 		try {
 			List<Issue> issues = getIssues(message, langTool);
 			return new ResponseEntity<>(
