@@ -7,6 +7,10 @@ public class Issue {
     private Match match;
 
     public Issue(){}
+    public Issue(String type, Match match) {
+        this.type = type;
+        this.match = match;
+    }
     public Issue(String message, RuleMatch match){
         type = match.getRule().getCategory().getName();
 	    this.match = new Match(
