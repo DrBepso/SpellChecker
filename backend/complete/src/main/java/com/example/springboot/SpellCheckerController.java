@@ -79,15 +79,7 @@ public class SpellCheckerController {
 	private List<Issue> getIssues(String message, JLanguageTool langTool) throws IOException {
 		List<RuleMatch> matches = langTool.check(message);
 		return matches.stream()
-		  .map(match -> new Issue(
-			match.getRule().getCategory().getName(),
-			new Match(
-			  message.substring(match.getFromPos(), match.getToPos()),
-			  match.getFromPos(),
-			  match.getToPos(),
-			  match.getSuggestedReplacements()
-			)
-		  ))
+		  .map(match -> new Issue(message, match))
 		  .collect(Collectors.toList());
 	}
 }
