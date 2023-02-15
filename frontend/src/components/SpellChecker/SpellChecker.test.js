@@ -97,6 +97,17 @@ describe('Spellchecker component', () => {
     fireEvent.click(button);
     expect(input.value).toBe('correct');
   });
+
+  it('should not render TypoBlock component if there is no text', () => {
+    const { getByPlaceholderText, container } = render(<SpellChecker />);
+    const input = getByPlaceholderText('Type here...');
+    const typoBlocks = container.querySelectorAll('.typo-block');
+    fireEvent.change(input, { target: { value: 'word' } });
+
+    jest.advanceTimersByTime(1000);
+
+    expect(typoBlocks.length).toBe(0);
+  });
 });
 
 describe('API calls', ()=>{
