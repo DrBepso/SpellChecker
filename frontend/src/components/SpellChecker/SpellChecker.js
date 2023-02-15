@@ -5,16 +5,16 @@ import TypoBlock from '../TypoBlock/TypoBlock';
 
 export default function SpellChecker() {
     const [sentence, setSentence] = useState('')
-    const [text, setText] = useState('');
+    const [textAreaText, setTextAreaText] = useState('');
     const [typos, setTypos] = useState([]);
     
     const URL = 'http://localhost:8080'
     const handleTextChange = e => {
-      setText(e.target.value);
+      setTextAreaText(e.target.value);
       setSentence(e.target.value);
     };
     const handleSuggestionClick = (typo, suggestion) => {
-      setText(text => {
+      setTextAreaText(text => {
         const newText = text.slice(0, typo.start) + suggestion + text.slice(typo.end);
         setSentence(newText);
         return newText;
@@ -60,7 +60,7 @@ export default function SpellChecker() {
             autoComplete='off'
             className='live-type-field'
             placeholder='Type here...'
-            value={text}
+            value={textAreaText}
             style={{width: "100%", height: "100%", fontFamily: 'Futura', fontSize: "18px"}}
             onChange={handleTextChange}
           />
