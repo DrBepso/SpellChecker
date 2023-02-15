@@ -7,15 +7,18 @@ export default function SpellChecker() {
     const [sentence, setSentence] = useState('')
     const [textAreaText, setTextAreaText] = useState('');
     const [typos, setTypos] = useState([]);
+    const [debounceCheck, setDebounceCheck] = useState(true);
     
     const URL = 'http://localhost:8080'
     const handleTextChange = e => {
       setTextAreaText(e.target.value);
+      setDebounceCheck(true);
       setSentence(e.target.value);
     };
     const handleSuggestionClick = (typo, suggestion) => {
       setTextAreaText(text => {
         const newText = text.slice(0, typo.start) + suggestion + text.slice(typo.end);
+        setDebounceCheck(false);
         setSentence(newText);
         return newText;
       });
@@ -23,14 +26,14 @@ export default function SpellChecker() {
     };
 
     useEffect(() => {
-      const customConfig = {
-        headers: {
-        'Content-Type': 'text/plain'
-        }
-      }
-      const delayDebounceFn = setTimeout(async () => {
-        if(sentence){
+      const spellCheckCall = async (sentence) => {
+        if (sentence) {
           try {
+            const customConfig = {
+              headers: {
+                'Content-Type': 'text/plain'
+              }
+            };
             const res = await axios.post(URL + "/message", sentence, customConfig);
             setTypos(
               res.data.issues.map((typo) => ({
@@ -45,9 +48,18 @@ export default function SpellChecker() {
             console.error(error);
           }
         }
-        
-      }, 1000)
-      return () => clearTimeout(delayDebounceFn)
+      };
+
+      
+      if(debounceCheck){
+        const delayDebounceFn = setTimeout(async () => {
+          spellCheckCall(sentence);
+          
+        }, 1000)
+        return () => clearTimeout(delayDebounceFn)
+      }else{
+        spellCheckCall(sentence);
+      }
     }, [sentence])
   
     return (
